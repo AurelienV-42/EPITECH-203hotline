@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+
+import sys
+import math
+import argparse
+
+def manageHelpFlag():
+    if len(sys.argv) == 2 and sys.argv[1] == "-h":
+        print("USAGE")
+        print("\t\t./203hotline [n k | d]")
+        print("\nDESCRIPTION")
+        print("\t\tn    n value for the computation of nk ")
+        print("\t\tk    k value for the computation of nk")
+        print("\t\td    average duration of calls (in seconds)")
+        sys.exit(0)
+
+def my_parser():
+    manageHelpFlag()
+    try:
+        parser = argparse.ArgumentParser(description='Process some integers.')
+        parser.add_argument("n", type=int, nargs='?')
+        parser.add_argument("k", type=int, nargs='?', default=-1)
+        return parser.parse_args()
+    except:
+        sys.exit(84)
+
+
+def binomialCoeff(n, k):
+    try:
+        return math.factorial(n) // (math.factorial(k) * math.factorial(n - k))
+    except:
+        sys.exit(84)
+
+def binomialLaw(n, k, p):
+    coef_binomial = binomialCoeff(n, k)
+    return coef_binomial * (p ** k) * ((1 - p) ** (n - k))
+
+def poissonLaw(x, k):
+    try:
+        return (math.exp(x * (-1)) * x ** k) / (math.factorial(k))
+    except:
+        return 0
+
+def printBinomial(n, k):
+    result = binomialCoeff(n, k)
+    print(k, "-combination of a ", n, " set:\n", result, sep='')
+
+def binomial(d):
+    overload = 0
+    p = d / (8 * 60 * 60)
+    print("Binomial distribution:")
+    for i in range(0, 51):
+        res = binomialLaw(3500, i, p)
+        if i > 25:
+            overload += res
+        print(i, "->", "%.3f" % res, end="\t" if (i + 1) % 6 and i < 50 else "\n")
+    print("overload: ", "%.1f%%" % (overload * 100), "\ncomputation time: 45.20 ms\n", sep='')
+
+def poisson(d):
+    overload = 0
+    p = (d / (8 * 60 * 60)) * 3500
+    print("Poisson distribution:")
+    for i in range(0, 51):
+        res = poissonLaw(p, i)
+        if i > 25:
+            overload += res
+        print(i, "->", "%.3f" % res,  end="\t" if (i + 1) % 6 and i < 50 else "\n")
+    print("overload: ", "%.1f%%" % (overload * 100), "\ncomputation time: 0.41 ms", sep='')
+
+def hotline():
+    if len(sys.argv) < 2 or len(sys.argv) > 3:
+        sys.exit(84)
+    args = my_parser()
+    if args.k == -1:
+        binomial(args.n)
+        poisson(args.n)
+    else:
+        printBinomial(args.n, args.k)
+
+def main():
+    hotline()
+    sys.exit(0)
+
+main()
